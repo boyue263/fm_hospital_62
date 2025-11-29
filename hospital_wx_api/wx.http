@@ -1,0 +1,25 @@
+POST http://localhost:9092/wx/patient/user/loginOrRegister
+Content-Type: application/json
+
+{
+  "code": "微信code_123",
+  "nickname": "测试用户",
+  "photo": "https://avatar.url",
+  "sex": "男"
+}
+
+###
+POST http://localhost:9092/wx/medical/dept/selectMedicalDeptList
+Content-Type: application/json
+
+{
+  "outpatient":true
+}
+
+###
+POST http://localhost:9092/wx/medical/dept/sub/selectMedicalDeptSubList
+Content-Type: application/json
+
+{
+  "deptId":1
+}

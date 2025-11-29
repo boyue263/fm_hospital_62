@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.wx.dao.PatientUserDao">
+
+        <insert id="insert" parameterType="com.hospital.wx.pojo.PatientUser" useGeneratedKeys="true" keyProperty="id" >
+            INSERT INTO patient_user
+            SET
+            <if test="openId!=null">
+                open_id = #{openId},
+            </if>
+            <if test="nickname!=null">
+                nickname = #{nickname},
+            </if>
+            <if test="photo!=null">
+                photo = #{photo},
+            </if>
+            <if test="sex!=null">
+                sex = #{sex},
+            </if>
+            status = #{status}
+        </insert>
+    <select id="existsUserByOpenId" parameterType="String" resultType="java.lang.Integer">
+        SELECT id
+        FROM patient_user
+        WHERE open_id = #{openId}
+    </select>
+    <select id="selectOpenIdByUserId" resultType="java.util.HashMap" parameterType="int">
+        SELECT u.open_id AS openId,
+               c.id AS patientCardId
+        FROM patient_user u
+                 JOIN patient_user_info c ON c.user_id=u.id
+        WHERE u.id = #{userId}
+    </select>
+
+
+</mapper>

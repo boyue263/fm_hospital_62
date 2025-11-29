@@ -1,0 +1,20 @@
+POST http://localhost:9091/hms/user/login
+Content-Type: application/json
+
+{
+  "username": "zhangsan",
+  "password": "zhangsan"
+}
+
+
+###
+POST http://localhost:9091/hms/dept/insert
+Content-Type: application/json
+
+{
+  "deptName": "内科",
+  "tel": "13812345678",
+  "email": "neike@hospital.com",
+  "desc": "专注内科"
+}
+

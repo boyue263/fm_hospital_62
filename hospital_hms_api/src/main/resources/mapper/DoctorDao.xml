@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.hms.dao.DoctorDao">
+    <select id="selectDoctorByPage" parameterType="map" resultType="map">
+        SELECT
+        md.name AS deptName,
+        d.school AS school,
+        mds.name AS subName,
+        d.sex AS sex,
+        d.name AS name,
+        d.degree AS degree,
+        d.tel AS tel,
+        d.id AS id,
+        d.job AS job,
+        d.recommended AS recommended,
+        d.status AS status
+        FROM doctor d
+        LEFT JOIN medical_dept_sub_doctor mdsd ON mdsd.doctor_id = d.id
+        LEFT JOIN medical_dept_sub mds ON mds.id = mdsd.dept_sub_id
+        LEFT JOIN medical_dept md ON md.id = mds.dept_id
+        INNER JOIN (
+        SELECT d.id
+        FROM doctor d
+        LEFT JOIN medical_dept_sub_doctor mdsd ON mdsd.doctor_id = d.id
+        LEFT JOIN medical_dept_sub mds ON mds.id = mdsd.dept_sub_id
+        LEFT JOIN medical_dept md ON md.id = mds.dept_id
+        <where>
+            <if test="name != null and name != ''">
+                AND d.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="deptId != null and deptId != ''">
+                AND md.id = #{deptId}
+            </if>
+            <if test="degree != null and degree != ''">
+                AND d.degree = #{degree}
+            </if>
+            <if test="job != null and job != ''">
+                AND d.job = #{job}
+            </if>
+            <if test="recommended != null and recommended != ''">
+                AND d.recommended = #{recommended}
+            </if>
+            <if test="status != null and status != ''">
+                AND d.status = #{status}
+            </if>
+        </where>
+        GROUP BY d.id
+        <if test="order != null and order != ''">
+            ORDER BY d.id ${order}
+        </if>
+        LIMIT #{start}, #{length}
+        ) AS pageIds ON pageIds.id = d.id
+    </select>
+
+    <select id="selectDoctorCount" parameterType="map" resultType="java.lang.Long">
+        select COUNT(*) FROM
+            ( select DISTINCT d.id
+        FROM doctor d
+        LEFT JOIN medical_dept_sub_doctor mdsd
+        ON mdsd.doctor_id = d.id
+        LEFT JOIN  medical_dept_sub mds
+        ON mds.id = mdsd.dept_sub_id
+        LEFT JOIN medical_dept md
+        ON md.id= mds.dept_id
+        <where>
+            <if test="name!=null and name!=''">
+                AND d.name like CONCAT('%',#{name},'%')
+            </if>
+            <if test="deptId!=null and deptId!=''">
+                AND md.id =#{deptId}
+            </if>
+            <if test="degree!=null and degree!=''">
+                AND d.degree =#{degree}
+            </if>
+            <if test="job!=null and job!=''">
+                AND d.job =#{job}
+            </if>
+            <if test="recommended!=null and recommended!=''">
+                AND d.recommended =#{recommended}
+            </if>
+            <if test="status!=null and status!=''">
+                AND d.status =#{status}
+            </if>
+        </where>
+            ) AS temp
+    </select>
+
+    <insert id="insert" parameterType="com.hospital.hms.pojo.Doctor" useGeneratedKeys="true" keyProperty="id" >
+        insert into doctor
+        (`name`, pid, uuid,
+         sex,birthday,school,
+         `degree`, `tel`, address,
+         email, job, remark,
+         description, hiredate, tag,
+         recommended, `status`)
+        values (
+                   #{name}, #{pid}, #{uuid},
+                   #{sex}, #{birthday},#{school},
+                   #{degree}, #{tel},#{address},
+                   #{email}, #{job},#{remark},
+                   #{description}, #{hiredate},#{tag},
+                   #{recommended}, #{status})
+    </insert>
+
+    <select id="selectDoctorDetailById" parameterType="Integer" resultType="java.util.HashMap">
+        SELECT pid,
+               birthday,
+               uuid,
+               hiredate,
+               email,
+               remark,
+               tag,
+               address,
+               description,
+               photo
+        FROM doctor
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectById" resultType="java.util.HashMap">
+        SELECT d.id AS id,
+               d.name AS name,
+               d.pid AS pid,
+               d.uuid ASuuid,
+               d.sex AS sex,
+               d.birthday AS birthday,
+               d.school AS school,
+               d.degree AS degree,
+               d.tel AS tel,
+               d.address AS address,
+               d.email AS email,
+               d.job AS job,
+               d.remark AS remark,
+               d.description AS description,
+               d.hiredate AS hiredate,
+               d.tag AS tag,
+               d.recommended AS recommended,
+               d.status AS status,
+               md.name AS deptName,
+               sd.dept_sub_id AS deptSubId
+        FROM doctor d
+                 JOIN medical_dept_sub_doctor sd ON sd.doctor_id = d.id
+                 JOIN medical_dept_sub ds ON sd.dept_sub_id = ds.id
+                 JOIN medical_dept md ON ds.dept_id = md.id
+        WHERE d.id = #{id}
+    </select>
+    <update id="update" parameterType="HashMap">
+        update doctor
+        set `name`      = #{name},
+            pid         = #{pid},
+            sex         = #{sex},
+            birthday    = #{birthday},
+            school      = #{school},
+            `degree`    = #{degree},
+            tel         = #{tel},
+            address     = #{address},
+            email       = #{email},
+            job         = #{job},
+            remark      = #{remark},
+            description = #{description},
+            hiredate    = #{hiredate},
+            tag         = #{tag},
+            recommended = #{recommended},
+            `status`    = #{status}
+        where id = #{id}
+    </update>
+    <update id="deleteByIds">
+        update doctor
+        set status = 4
+        WHERE id IN
+        <foreach collection="array" open="(" item="one" separator="," close=")">
+            #{one}
+        </foreach>
+    </update>
+
+    <select id="selectDoctorBySubId" parameterType="int" resultType="java.util.HashMap">
+        SELECT d.id AS id, d.name AS `name`
+        FROM doctor d JOIN medical_dept_sub_doctor sd ON
+            sd.doctor_id = d.id WHERE sd.dept_sub_id = #{id} AND d.status = 1
+    </select>
+
+    <update id="updatePicture" parameterType="Map">
+        UPDATE doctor
+        SET photo = #{photo}
+        WHERE id = #{id}
+    </update>
+</mapper>

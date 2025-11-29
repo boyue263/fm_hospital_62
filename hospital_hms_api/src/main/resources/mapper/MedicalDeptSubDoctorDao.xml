@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.hms.dao.MedicalDeptSubDoctorDao">
+    <insert id="insert" parameterType="com.hospital.hms.pojo.MedicalDeptSubDoctor">
+        INSERT INTO medical_dept_sub_doctor (dept_sub_id,doctor_id)
+        VALUES (#{deptSubId},#{doctorId})
+    </insert>
+
+    <update id="updateDoctorSubDept" parameterType="Map">
+        UPDATE medical_dept_sub_doctor
+        SET dept_sub_id= #{subId}
+        WHERE doctor_id = #{doctorId}
+    </update>
+
+    <delete id="deleteByDoctorId">
+        DELETE FROM medical_dept_sub_doctor
+        WHERE doctor_id IN
+        <foreach collection="array" open="(" separator="," close=")" item="one">
+            #{one}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.wx.dao.PatientUserInfoDao">
+    <insert id="insert" parameterType="com.hospital.wx.pojo.PatientUserInfo">
+        INSERT INTO patient_user_info
+        (user_id, uuid, `name`,sex,pid,tel,
+         birthday, medical_history, insurance_type,exist_face_model)
+        values (
+                   #{userId}, #{uuid}, #{name},#{sex}, #{pid},#{tel},
+                   #{birthday}, #{medicalHistory},#{insuranceType},#{existFaceModel})
+    </insert>
+
+    <select id="selectTelById" parameterType="int" resultType="java.lang.String">
+        SELECT tel
+        FROM patient_user_info
+        WHERE user_id = #{id}
+    </select>
+    <select id="selectPatientUserInfoByUserId" parameterType="int" resultType="java.util.HashMap">
+        SELECT id, uuid, `name`, sex, pid, tel, birthday,
+               medical_history AS medicalHistory,
+               insurance_type AS insuranceType
+        FROM patient_user_info
+        WHERE user_id = #{userId}
+    </select>
+    <update id="update" parameterType="com.hospital.wx.pojo.PatientUserInfo">
+        update patient_user_info
+        set `name` = #{name},
+            pid = #{pid},
+            sex = #{sex},
+            birthday = #{birthday},
+            tel = #{tel},
+            medical_history = #{medicalHistory},
+            insurance_type = #{insuranceType}
+        where id = #{id}
+    </update>
+    <update id="updateExistFaceModel" parameterType="HashMap">
+        update patient_user_info
+        set `exist_face_model` = #{existFaceModel}
+        where user_id = #{userId}
+    </update>
+    <!--检查是否存在人脸面部数据-->
+
+    <select id="existsFaceModel" parameterType="int" resultType="java.lang.Boolean">
+        SELECT exist_face_model AS existFaceModel
+        FROM patient_user_info
+        WHERE user_id = #{userId}
+    </select>
+    <select id="checkPatientExistsByUserId" parameterType="int" resultType="java.lang.Integer">
+        SELECT id
+        FROM patient_user_info
+        WHERE user_id = #{userId}
+    </select>
+</mapper>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.hms.dao.MedicalDeptSubDao">
+    <select id="selectMedicalDeptSubConditionByPage" parameterType="map" resultType="java.util.HashMap">
+        SELECT
+            md.name AS deptName,
+            md.id AS deptId,
+            temp2.generalDoctors AS generalDoctors,
+            mds.name AS subName,
+            temp1.doctors AS doctors,
+            mds.location AS location,
+            mds.id AS id,
+            temp3.masterDoctors AS masterDoctors
+        FROM medical_dept_sub mds
+                 JOIN medical_dept md ON mds.dept_id = md.id
+                 LEFT JOIN (
+            SELECT
+                mds1.id AS id,
+                COUNT(d1.id) AS doctors
+            FROM medical_dept_sub mds1
+                     LEFT JOIN medical_dept_sub_doctor mdsd1 ON mdsd1.dept_sub_id = mds1.id
+                     LEFT JOIN doctor d1 ON d1.id = mdsd1.doctor_id AND d1.status = 1
+            GROUP BY mds1.id
+        ) temp1 ON mds.id = temp1.id
+                 LEFT JOIN (
+            SELECT
+                mds1.id AS id,
+                COUNT(d1.id) AS generalDoctors
+            FROM medical_dept_sub mds1
+                     LEFT JOIN medical_dept_sub_doctor mdsd1 ON mdsd1.dept_sub_id = mds1.id
+                     LEFT JOIN doctor d1 ON d1.id = mdsd1.doctor_id AND d1.status = 1 AND d1.job NOT IN ('主任医师', '副主任医师')
+            GROUP BY mds1.id
+        ) temp2 ON mds.id = temp2.id
+                 LEFT JOIN (
+            SELECT
+                mds1.id AS id,
+                COUNT(d1.id) AS masterDoctors
+            FROM medical_dept_sub mds1
+                     LEFT JOIN medical_dept_sub_doctor mdsd1 ON mdsd1.dept_sub_id = mds1.id
+                     LEFT JOIN doctor d1 ON d1.id = mdsd1.doctor_id AND d1.status = 1 AND d1.job IN ('主任医师', '副主任医师')
+            GROUP BY mds1.id
+        ) temp3 ON mds.id = temp3.id
+            <where>
+                <if test="name!=null">
+                     AND mds.name LIKE CONCAT('%',#{name},'%')
+                </if>
+                <if test="deptId!=null">
+                    AND md.id=#{deptId}
+                </if>
+            </where>
+        <if test="order!=null">
+            ORDER BY md.id ${order}
+        </if>
+
+            LIMIT #{start}, #{length}
+    </select>
+
+    <select id="selectMedicalDeptSubConditionByPageCount" parameterType="map" resultType="long">
+        select count(*) FROM medical_dept_sub mds
+        LEFT JOIN  medical_dept d
+        ON d.id = mds.dept_id
+        <where>
+            <if test="name!=null">
+                AND mds.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="deptId!=null">
+                AND d.id = #{deptId}
+            </if>
+
+        </where>
+    </select>
+
+    <insert id="insertMedicalDeptSub" parameterType="com.hospital.hms.pojo.MedicalDeptSub">
+        INSERT INTO medical_dept_sub SET name=#{name},dept_id=#{deptId},location=#{location}
+    </insert>
+
+    <select id="selectMedicalDeptSubById" resultType="java.util.HashMap">
+        SELECT name,dept_id AS deptId,location FROM medical_dept_sub
+        WHERE id = #{id}
+    </select>
+
+    <update id="updateMedicalDeptSub" parameterType="com.hospital.hms.pojo.MedicalDeptSub">
+        UPDATE medical_dept_sub
+        SET name=#{name},
+            dept_id=#{deptId},
+            location=#{location}
+        WHERE id=#{id}
+    </update>
+</mapper>

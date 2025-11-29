@@ -1,0 +1,25 @@
+tencent:
+  cloud:
+    appId: 腾讯云APPID
+    secretId: 腾讯云SecretId
+    secretKey: 腾讯云SecretKey
+    region-public: 公有存储桶所在地域
+    bucket-public: 公有存储桶名称
+    region-private: 私有存储桶所在地域
+    bucket-private: 私有存储桶名称
+
+wx:
+  app-id: 你的微信小程序APPID
+  app-secret: 你的微信小程序密钥
+  mch-id: 商户号（课程QQ群共享文件中获取）
+  key: 商户密钥（课程QQ群共享文件中获取）
+  cert-path: 商户数字证书文件路径（课程QQ群共享文件中获取）
+
+minio:
+  endpoint: http://你本地电脑或者云主机IP:9000
+  access-key: root
+  secret-key: abc123456
+
+wechat:
+  app-id: wxe57c93bba08fcb97
+  app-secret: 5601444e60eee46c903c654e394bd295

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.hms.dao.DoctorWorkPlanDao">
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM doctor_work_plan
+        WHERE id = #{id}
+    </delete>
+    <select id="checkDoctorWorkPlanForToday" parameterType="map" resultType="Integer">
+        SELECT id FROM doctor_work_plan
+        WHERE doctor_id=#{doctorId}
+        AND dept_sub_id=#{deptSubId}
+        AND date = STR_TO_DATE('${date}', '%Y-%m-%d')
+    </select>
+
+    <insert id="insert" parameterType="com.hospital.hms.pojo.DoctorWorkPlan"
+            useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO doctor_work_plan(doctor_id,dept_sub_id,date,maximum,num)
+        VALUES(#{doctorId},#{deptSubId},#{date},#{maximum},#{num})
+    </insert>
+    <select id="selectWorkPlanByTime" parameterType="Map" resultType="HashMap">
+        SELECT md.name AS deptName,
+        ds.id AS deptSubId,
+        ds.name AS deptSubName,
+        d.name AS doctorName,
+        wp.id AS workPlanId,
+        wp.date AS date
+        FROM doctor_work_plan wp
+        JOIN doctor d ON wp.doctor_id = d.id
+        JOIN medical_dept_sub ds ON ds.id = wp.dept_sub_id
+        JOIN medical_dept md ON ds.dept_id = md.id
+        WHERE wp.date BETWEEN STR_TO_DATE('${startDate}', '%Y-%m-%d') AND STR_TO_DATE('${endDate}', '%Y-%m-%d')
+        <if test="deptId!=null">
+            AND ds.dept_id = #{deptId}
+        </if>
+        <if test="doctorName!=null">
+            AND d.name LIKE '%${doctorName}%'
+        </if>
+        ORDER BY ds.id,wp.date
+    </select>
+    <select id="selectActualRegistrationCount" parameterType="int" resultType="java.lang.Integer">
+        SELECT num
+        FROM doctor_work_plan
+        WHERE id = #{id}
+    </select>
+    <update id="updateMaximum" parameterType="Map">
+        UPDATE doctor_work_plan
+        SET maximum = #{maximum}
+        where id = #{workPlanId}
+    </update>
+    
+</mapper>

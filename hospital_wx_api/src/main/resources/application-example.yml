@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    druid:
+      url: jdbc:mysql://YOUR_DB_HOST:3306/fm_hospital?useUnicode=true
+      username: YOUR_DB_USERNAME
+      password: YOUR_DB_PASSWORD
+
+  redis:
+    host: YOUR_REDIS_HOST
+    password: YOUR_REDIS_PASSWORD
+
+minio:
+  endpoint: http://YOUR_MINIO_HOST:9000
+  access-key: YOUR_ACCESS_KEY
+  secret-key: YOUR_SECRET_KEY
+
+wechat:
+  app-id: YOUR_WECHAT_APPID
+  app-secret: YOUR_WECHAT_SECRET
+
+tencent:
+  cloud:
+    appId: YOUR_TENCENT_APPID
+    secretId: YOUR_TENCENT_SECRET_ID
+    secretKey: YOUR_TENCENT_SECRET_KEY

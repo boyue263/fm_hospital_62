@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hospital.hms.dao.UserDao">
+    <select id="login" parameterType="map" resultType="java.lang.Integer">
+        select id from users
+        where username = #{username}
+        AND password = #{password}
+    </select>
+
+    <select id="selectUserPrivileges" parameterType="Integer" resultType="java.lang.String">
+        SELECT DISTINCT permission_name FROM users u JOIN role r ON JSON_CONTAINS(u.role,CAST(r.id AS CHAR))
+        JOIN permission p ON JSON_CONTAINS(r.permissions,CAST(p.id AS CHAR ))
+        WHERE u.id = #{userId}
+        AND u.status = 1
+    </select>
+    <update id="updateUserPassword" parameterType="map">
+        UPDATE users
+            SET password = MD5(CONCAT(
+                               SUBSTRING(MD5(username),1,6),
+                               #{newPassword},
+                                SUBSTRING(MD5(username),LENGTH(MD5(username)) - 2, 3)
+                               ))
+        WHERE id =#{userId}
+        AND password= MD5(CONCAT(
+            SUBSTRING(MD5(username),1,6),
+            #{oldPassword},
+            SUBSTRING(MD5(username),LENGTH(MD5(username)) - 2, 3)
+            ))
+    </update>
+
+
+</mapper>

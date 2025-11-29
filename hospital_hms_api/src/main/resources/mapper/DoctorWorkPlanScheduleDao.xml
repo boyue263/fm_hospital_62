@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.hms.dao.DoctorWorkPlanScheduleDao">
+
+    <insert id="insert" parameterType="com.hospital.hms.pojo.DoctorWorkPlanSchedule">
+        insert into doctor_work_plan_schedule
+            (work_plan_id,slot,maximum)
+        values (#{workPlanId}, #{slot}, #{maximum})
+    </insert>
+
+    <select id="selectScheduleByWorkPlanId" parameterType="int" resultType="java.util.HashMap">
+        SELECT p.doctor_id AS doctorId,
+               s.id AS scheduleId,
+               s.slot AS slot,
+               s.maximum AS maximum,
+               s.num AS num,
+               DATE_FORMAT(p.date, '%Y-%m-%d') AS date
+        FROM doctor_work_plan p
+            JOIN doctor_work_plan_schedule s ON s.work_plan_id = p.id
+        WHERE p.id = #{workPlanId}
+    </select>
+
+    <select id="selectDoctorScheduleByDeptSubIdAndDate" parameterType="map" resultType="java.util.HashMap">
+        select dwps.maximum AS maximum,
+               d.id AS doctorId,
+               d.name AS doctorName,
+               dwp.id AS workPlanId,
+               dwps.slot AS slot
+        FROM doctor_work_plan dwp
+        JOIN doctor d
+        ON d.id=dwp.doctor_id
+        JOIN doctor_work_plan_schedule dwps
+        ON dwps.work_plan_id = dwp.id
+        <where>
+            <if test="deptSubId !=null">
+               AND dwp.dept_sub_id=#{deptSubId}
+            </if>
+            <if test="date != null">
+                AND dwp.date = STR_TO_DATE('${date}','%Y-%m-%d')
+            </if>
+            ORDER BY d.id,dwps.slot
+        </where>
+    </select>
+
+    <select id="selectDoctorScheduleByWorkPlanId" parameterType="Integer" resultType="java.util.HashMap">
+      select dwps.slot AS slot,
+        dwps.num AS num,
+        dwps.id AS scheduleId,
+        dwps.maximum AS maximum,
+        dwp.doctor_id AS doctorId
+
+        FROM doctor_work_plan_schedule dwps
+        JOIN doctor_work_plan dwp
+        ON dwps.work_plan_id = dwp.id
+        WHERE dwp.id=#{workPlanId}
+    </select>
+    <select id="selectSumNumByIds" resultType="long">
+        SELECT SUM(num) FROM doctor_work_plan_schedule
+        WHERE id IN
+        <foreach collection="list" open="(" item="one" separator="," close=")">
+            #{one}
+        </foreach>
+    </select>
+    <delete id="deleteByIds">
+        DELETE FROM doctor_work_plan_schedule
+        WHERE id IN
+        <foreach collection="list" open="(" item="one" separator="," close=")">
+            #{one}
+        </foreach>
+    </delete>
+    <delete id="deleteByWorkPlanId" parameterType="int">
+        DELETE FROM doctor_work_plan_schedule
+        WHERE work_plan_id = #{workPlanId}
+    </delete>
+</mapper>

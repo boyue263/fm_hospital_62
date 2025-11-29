@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.hms.dao.MedicalDeptDao">
+    <select id="selectConditionByPage" parameterType="Map" resultType="HashMap">
+        SELECT
+            md1.id AS id,
+            md1.name AS name,
+            md1.outpatient AS outpatient,
+            md1.description AS description,
+            md1.recommended AS recommended,
+            td1.subs AS subs,
+            td2.doctors AS doctors
+        FROM medical_dept md1
+        LEFT JOIN (SELECT md2.id,COUNT(mds.id) AS subs
+        FROM medical_dept md2
+        LEFT JOIN medical_dept_sub mds
+        ON mds.dept_id = md2.id
+        GROUP BY md2.id
+        ) td1 ON td1.id = md1.id
+        LEFT JOIN (SELECT md3.id,COUNT(d.id) AS doctors
+        FROM medical_dept md3
+        LEFT JOIN medical_dept_sub mds1
+        ON md3.id = mds1.dept_id
+        LEFT JOIN medical_dept_sub_doctor mdsd
+        ON mds1.id = mdsd.dept_sub_id
+        LEFT JOIN doctor d
+        ON d.id = mdsd.doctor_id AND d.status =1
+        GROUP BY md3.id
+        ) td2 ON td2.id = md1.id
+        <where>
+            <if test="name!=null">
+                AND md1.name LIKE CONCAT('%',#{name},'%')
+            </if>
+            <if test="outpatient!=null">
+                AND md1.outpatient =#{outpatient}
+            </if>
+            <if test="recommended!=null">
+                AND md1.recommended =#{recommended}
+            </if>
+        </where>
+        ORDER BY md1.id
+        LIMIT #{start},#{length}
+    </select>
+
+    <select id="selectConditionByPageCount" parameterType="Map" resultType="long">
+        SELECT COUNT(*) FROM (
+        SELECT md1.id
+        FROM medical_dept md1
+        LEFT JOIN (
+        SELECT md2.id, COUNT(mds.id) AS subs
+        FROM medical_dept md2
+        LEFT JOIN medical_dept_sub mds ON mds.dept_id = md2.id
+        GROUP BY md2.id
+        ) td1 ON td1.id = md1.id
+        LEFT JOIN (
+        SELECT md3.id, COUNT(d.id) AS doctors
+        FROM medical_dept md3
+        LEFT JOIN medical_dept_sub mds1 ON md3.id = mds1.dept_id
+        LEFT JOIN medical_dept_sub_doctor mdsd ON mds1.id = mdsd.dept_sub_id
+        LEFT JOIN doctor d ON d.id = mdsd.doctor_id AND d.status = 1
+        GROUP BY md3.id
+        ) td2 ON td2.id = md1.id
+        <where>
+            <if test="name != null">
+                AND md1.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="outpatient != null">
+                AND md1.outpatient = #{outpatient}
+            </if>
+            <if test="recommended != null">
+                AND md1.recommended = #{recommended}
+            </if>
+        </where>
+        ) temp
+    </select>
+
+    <insert id="insertMedicalDept" parameterType="com.hospital.hms.pojo.MedicalDept" >
+        INSERT INTO medical_dept (name, outpatient, description, recommended)
+        VALUES (#{name}, #{outpatient}, #{description}, #{recommended})
+    </insert>
+
+    <select id="selectMedicalDeptById" parameterType="Integer" resultType="java.util.HashMap">
+        select * FROM medical_dept
+        WHERE id = #{id}
+    </select>
+
+    <update id="updateMedicalDept" parameterType="com.hospital.hms.pojo.MedicalDept">
+        UPDATE medical_dept
+            SET name =#{name},
+                outpatient=#{outpatient},
+                description=#{description},
+                recommended=#{recommended}
+        WHERE id=#{id}
+    </update>
+
+    <select id="selectAllMedicalDeptNameAndId" resultType="java.util.HashMap">
+        SELECT id,name FROM medical_dept
+    </select>
+
+    <delete id="deleteMedicalDeptById" >
+        DELETE FROM medical_dept WHERE id IN
+            <foreach collection="array" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+    </delete>
+
+    <select id="selectMedicalDeptCanDelete"  resultType="boolean">
+        SELECT IF(SUM(temp.subs)>0, false,true)
+        FROM(
+        SELECT COUNT(md.id) AS subs FROM medical_dept md
+        JOIN medical_dept_sub mds
+        on md.id=mds.dept_id
+        WHERE md.id IN
+        <foreach collection="array" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        GROUP BY md.id
+        ) temp
+    </select>
+
+    <select id="selectDeptAndSup" resultType="java.util.HashMap">
+        SELECT md.name AS deptName,mds.id AS subId,mds.name AS subName FROM medical_dept md
+        LEFT JOIN medical_dept_sub mds
+        ON md.id=mds.dept_id
+    </select>
+</mapper>

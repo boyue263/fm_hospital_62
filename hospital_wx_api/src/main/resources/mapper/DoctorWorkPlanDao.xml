@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.wx.dao.DoctorWorkPlanDao">
+    <select id="selectDoctorScheduleBySubIdAndDate" parameterType="map" resultType="java.lang.String">
+        SELECT DISTINCT `date`
+        FROM doctor_work_plan
+        WHERE dept_sub_id = #{deptSubId}
+          AND date BETWEEN STR_TO_DATE('${startDate}', '%Y-%m-%d') AND STR_TO_DATE('${endDate}', '%Y-%m-%d')
+    </select>
+    <select id="getDoctorShiftDetailsBySubIdAndDate" parameterType="map" resultType="java.util.HashMap">
+        SELECT d.id AS id,
+               d.name AS name,
+               d.photo AS photo,
+               d.job AS job,
+               d.description AS description,
+               p.num AS num,
+               p.maximum AS maximum,
+               FORMAT(dp.price_1, 2) AS price
+        FROM doctor_work_plan p
+                 JOIN doctor d ON p.doctor_id = d.id
+                 JOIN doctor_price dp ON p.doctor_id = dp.doctor_id
+        WHERE p.dept_sub_id = #{deptSubId}
+          AND p.date = STR_TO_DATE('${date}', '%Y-%m-%d')
+    </select>
+    <update id="updateNumById" parameterType="map">
+        UPDATE doctor_work_plan
+        SET num = num + #{n}
+        where id = #{id}
+    </update>
+    <update id="releaseRegistrationLock" parameterType="String">
+        UPDATE doctor_work_plan p
+            JOIN medical_registration r ON r.work_plan_id = p.id
+            SET p.num = p.num - 1
+        WHERE r.out_trade_no = #{outTradeNo}
+    </update>
+</mapper>
